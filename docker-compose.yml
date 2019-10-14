@@ -1,0 +1,71 @@
+# Docker Compose for production environment
+version: '3.7'
+services:
+  # Caddy Server
+  caddy:
+    image: abiosoft/caddy:no-stats
+    container_name: caddy
+    env_file:
+      - /root/docker-data/caddy/caddy.env
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /root/docker-data/caddy/Caddyfile:/etc/Caddyfile
+      - /root/docker-data/caddy/.caddy:/root/.caddy
+    networks:
+      - app-network
+    depends_on:
+      - node1
+      - node2
+  # Backend Node 1
+  node1:
+    image: kilometer1asta/backend:dev #Temporary dev image
+    container_name: node1
+    env_file:
+      - /root/docker-data/nodes/node1.env
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+      - redis
+  # Backend Node 2
+  node2:
+    image: kilometer1asta/backend:dev #Temporary dev image
+    container_name: node2
+    env_file:
+      - /root/docker-data/nodes/node2.env
+    restart: unless-stopped
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+      - redis
+  # Mysql Database
+  mysql:
+    image: mysql:5.7.27
+    container_name: mysql
+    env_file:
+      - /root/docker-data/mysql/mysql.env
+    restart: unless-stopped
+    volumes:
+      - mysqlDB:/var/lib/mysql
+    networks:
+      - app-network
+  # Redis Database
+  redis:
+    image: redis:5.0.6-alpine
+    container_name: redis
+    env_file:
+      - /root/docker-data/redis/redis.env
+    networks:
+      - app-network
+# Docker Volumes
+volumes:
+  mysqlDB:
+# Docker Networks
+networks:
+  app-network:
+    driver: bridge

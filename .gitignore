@@ -1,0 +1,6 @@
+.idea
+.idea/*
+env-files
+env-files/*
+conf-files
+conf-files/*
